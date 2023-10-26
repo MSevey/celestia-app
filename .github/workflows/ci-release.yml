@@ -1,3 +1,4 @@
+# BEGIN: 5f8d4a7f7f7a
 name: ci-release
 
 # Run this workflow on push events (i.e. PR merge) to main or release branches,
@@ -28,9 +29,20 @@ on:
           - major
 
 jobs:
+  branch_name:
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{ steps.trim_ref.outputs.branch }}
+    steps:
+      - name: Trim branch name
+        id: trim_ref
+        run: |
+          echo "branch=$(${${{ github.ref }}:11})" >> $GITHUB_OUTPUT
+
   # If this was a workflow dispatch event, we need to generate and push a tag
   # for goreleaser to grab
   version_bump:
+    needs: branch_name
     runs-on: ubuntu-latest
     permissions: "write-all"
     steps:
@@ -46,7 +58,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: ${{ inputs.version }}
-          release_branches: ${{ format(github.ref, 'refs/heads/', '') }}
+          release_branches: ${{ needs.branch_name.outputs.branch }}
 
   # Generate the release with goreleaser to include pre-built binaries
   goreleaser:
@@ -78,3 +90,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+# END: 5f8d4a7f7f7a
