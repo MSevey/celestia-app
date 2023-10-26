@@ -58,7 +58,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: ${{ inputs.version }}
-          release_branches: $(${${{ github.ref }}:11})
+          release_branches: ${{ $(${github.ref:11}) }}
 
   # Generate the release with goreleaser to include pre-built binaries
   goreleaser:
